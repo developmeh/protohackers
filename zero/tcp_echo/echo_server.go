@@ -2,6 +2,7 @@ package tcp_echo
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 )
@@ -23,7 +24,7 @@ func (server *Server) Run() {
 		log.Default().Println("Waiting")
 		conn, err := listener.Accept()
 		if err != nil {
-			// handle error
+			log.Default().Println("Error accepting connection")
 		}
 		go server.handleConnection(conn)
 	}
@@ -33,13 +34,10 @@ func (server *Server) handleConnection(conn net.Conn) {
 	log.Default().Println("Handling connection")
 	for {
 		input := make([]byte, 32768)
-		read_size, err := conn.Read(input)
-		if read_size == 0 {
-			log.Default().Println("connection closed")
-			break
-		}
-		if err != nil {
-			log.Default().Println("error reading data")
+		_, err := conn.Read(input)
+
+		if err != nil && err == io.EOF {
+			log.Default().Println("Closing Connection EOF")
 			break
 		}
 
